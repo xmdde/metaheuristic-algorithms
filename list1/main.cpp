@@ -53,6 +53,6 @@ int main(int argc, char** argv) {
 
     Graph* g = generate_from_file(ifs, name);
     g->primMST(0, false);
-    g->dfs_to_txt();
+    std::cout << "travelling salesman cycle weight: " << g->get_dfs_weight(true);
     return 0;
 }

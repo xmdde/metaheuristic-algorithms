@@ -85,24 +85,42 @@ void Graph::graph_to_json() {
     ofs.close();
 }
 
-void Graph::dfs_to_txt() {
-    if (mst.size() == 0) {
+int Graph::get_dfs_weight(const bool save_to_file) {
+    if (mst.empty()) {
         primMST(0, false);
     }
 
     std::vector<bool> visited(n, false);
-    std::vector<Edge*> dfs_cycle;
+    std::vector<int> dfs_cycle;
+    dfs_cycle.push_back(1);
     dfs_util(0, visited, dfs_cycle, -1);
-    // add the last one!
-    std::cout << "\n";
+
+    int weight = 0;
+    for (int i = 1; i < n; ++i) {
+        weight += get_edge(dfs_cycle[i-1], dfs_cycle[i])->weight;
+    }
+    weight += get_edge(dfs_cycle[n-1], 1)->weight;
+
+    if (save_to_file) {
+        const std::string path = "../output/dfs-" + name + ".txt";
+        std::ofstream ofs(path, std::ios_base::out);
+        ofs << "id\n";
+
+        for (int e : dfs_cycle) {
+            ofs << e << "\n";
+        }
+
+        ofs.close();
+    }
+
+    return weight;
 }
 
-void Graph::dfs_util(const int start, std::vector<bool>& visited, std::vector<Edge*>& dfs_cycle, const int prev) {
+void Graph::dfs_util(const int start, std::vector<bool>& visited, std::vector<int>& dfs_cycle, const int prev) {
     visited[start] = true;
-    std::cout << start + 1 << ' ';
 
     if (prev != -1) {
-        dfs_cycle.push_back(get_edge(prev + 1, start + 1));
+        dfs_cycle.push_back(start + 1);
     }
 
     for (int i : mst[start]) {
