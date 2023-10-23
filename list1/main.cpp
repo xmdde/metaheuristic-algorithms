@@ -1,7 +1,6 @@
 #include <iostream>
 #include <fstream>
 #include "Vertex.h"
-#include "Edge.h"
 #include "Graph.h"
 
 Graph* generate_from_file(std::ifstream& ifs, const std::string& name) {
@@ -53,6 +52,8 @@ int main(int argc, char** argv) {
 
     Graph* g = generate_from_file(ifs, name);
     g->primMST(0, false);
-    std::cout << "travelling salesman cycle weight: " << g->get_dfs_weight(true);
+    std::cout << "travelling salesman cycle weight: " << g->get_dfs_weight(false) << '\n';
+    std::cout << "stats: ";
+    g->stats();
     return 0;
 }

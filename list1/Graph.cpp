@@ -1,6 +1,7 @@
 #include "Graph.h"
 #include <fstream>
 #include <queue>
+#include <random>
 
 void Graph::add_point(Vertex* vertex) {
     points.push_back(vertex);
@@ -12,7 +13,7 @@ void Graph::add_edge(const int p1, const int p2) {
 
 void Graph::primMST(const int start, const bool save_to_file) {  // let's say that's an index
     std::vector<bool> inMST(n, false);
-    std::vector<int> key(n, INT_MAX);  // weight (probably unnecessary)
+    std::vector<int> key(n, INT_MAX);
     std::vector<int> parent(n, -1);
 
     std::priority_queue<Edge*, std::vector<Edge*>, CompareEdge> pq;
@@ -141,4 +142,70 @@ Edge* Graph::get_edge(const int from_id, const int to_id) {
     }
 
     return adj[from_id - 1][idx];
+}
+
+int Graph::random_cycle_weight() {
+    srand(time(nullptr));
+    std::random_device rd;
+    std::mt19937 mt(rd());
+    std::uniform_real_distribution<double> dist(0, n);
+
+    std::vector<int> cycle;
+    int used[n];
+    for (int i = 0; i < n; ++i) {
+        used[i] = i + 1;
+    }
+
+    for (int i = 0; i < n; ++i) {
+        bool inserted = false;
+        while (!inserted) {
+            int x = floor(dist(mt));
+            if (used[x] != -1) {
+                cycle.push_back(used[x]);
+                used[x] = -1;
+                inserted = true;
+            }
+        }
+    }
+
+    int weight = 0;
+    for (int i = 1; i < n; ++i) {
+        weight += get_edge(cycle[i-1], cycle[i])->weight;
+    }
+    weight += get_edge(cycle[n-1], cycle[0])->weight;
+
+    return weight;
+}
+
+void Graph::stats() {
+    uint64_t sum_group_of_10 = 0;  // sum of minimum weights in group of 10
+    uint64_t sum_group_of_50 = 0;
+    int min10 = INT_MAX;
+    int min50 = INT_MAX;
+    int min_global =INT_MAX;
+
+    for (int i = 1; i <= 1000; ++i) {
+        int weight = random_cycle_weight();
+
+        if (min10 > weight) {
+            min10 = weight;
+        }
+        if (min50 > weight) {
+            min50 = weight;
+        }
+        if (min_global > weight) {
+            min_global = weight;
+        }
+
+        if (i%10 == 0) {
+            sum_group_of_10 += min10;
+            min10 = INT_MAX;
+        }
+        if (i%50 == 0) {
+            sum_group_of_50 += min50;
+            min50 = INT_MAX;
+        }
+    }
+
+    std::cout << sum_group_of_10/100 << ';' << sum_group_of_50/20 << ';' << min_global;
 }

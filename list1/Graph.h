@@ -10,6 +10,9 @@ class Graph {
     const std::string name;
     std::vector<std::vector<Edge*>> adj;
     std::vector<std::vector<int>> mst;  // by indexes
+
+    Edge* get_edge(const int from_id, const int to_id);
+    void dfs_util(const int start, std::vector<bool>& visited, std::vector<int>& dfs_cycle, const int prev);
 public:
     int n;
     std::vector<Vertex*> points;
@@ -22,9 +25,9 @@ public:
     void add_edge(const int p1, const int p2);
     void primMST(const int start, const bool save_to_file);
     void graph_to_json();
-    int get_dfs_weight(const bool save_to_file);
-    void dfs_util(const int start, std::vector<bool>& visited, std::vector<int>& dfs_cycle, const int prev);
-    Edge* get_edge(const int from_id, const int to_id);
+    int get_dfs_weight(bool save_to_file);
+    int random_cycle_weight();
+    void stats();
 };
 
 struct CompareEdge {
