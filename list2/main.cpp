@@ -52,8 +52,6 @@ int main(int argc, char** argv) {
 
     Graph* g = generate_from_file(ifs, name);
     g->primMST(0);
-    int s = 0;
-    // std::cout << g->local_search_weight(s) << ';' << s;
-    g->experiment1();
+    g->experiment3();
     return 0;
 }

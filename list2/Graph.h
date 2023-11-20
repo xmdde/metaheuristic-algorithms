@@ -41,6 +41,12 @@ public:
     void experiment1();
 
     void experiment3();
+
+    void draw_nbhs(std::vector<std::pair<int,int>>& nbhs);
+
+    int local_search_weight_n_nbhs(int &steps);
+
+    std::vector<int> get_random_cycle();
 };
 
 struct CompareEdge {

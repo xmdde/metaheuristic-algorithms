@@ -13,7 +13,7 @@ void Graph::add_edge(const int p1, const int p2) {
     adj[p1].push_back(new Edge(points[p1], points[p2]));
 }
 
-void Graph::primMST(const int start) {  // let's say that's an index
+void Graph::primMST(const int start) {
     std::vector<bool> inMST(n, false);
     std::vector<int> key(n, INT_MAX);
     std::vector<int> parent(n, -1);
@@ -68,6 +68,19 @@ std::vector<int> Graph::get_dfs_cycle(const int start_id) {
     return dfs_cycle;
 }
 
+std::vector<int> Graph::get_random_cycle() {
+    std::vector<int> cycle;  // IDs
+    for (int i = 1; i <= n; ++i) {
+        cycle.push_back(i);
+    }
+
+    std::random_device rd;
+    std::mt19937 g(rd());
+    std::shuffle(cycle.begin(), cycle.end(), g);
+
+    return cycle;
+}
+
 void Graph::invert(std::vector<int>& cycle, int i, int j) { // i, j - indexes
     while (i < j) {
         std::swap(cycle[i], cycle[j]);
@@ -108,6 +121,41 @@ int Graph::local_search_weight(int& steps) {
                     indexes.second = j;
                 }
              }
+        }
+
+        if (cycle_weight > best_nbh_weight) {
+            invert(cycle, indexes.first, indexes.second);
+            cycle_weight = compute_weight(cycle);
+            steps++;
+            best_nbh_weight = INT_MAX;
+        } else {
+            return cycle_weight;
+        }
+    }
+}
+
+int Graph::local_search_weight_n_nbhs(int& steps) {
+    srand(time(nullptr));
+    std::random_device rd;
+    std::mt19937 mt(rd());
+    std::uniform_real_distribution<double> dist(0, n);
+
+    std::vector<int> cycle = get_random_cycle();
+    int cycle_weight = compute_weight(cycle);
+
+    while (true) {
+        std::pair<int, int> indexes;
+        int best_nbh_weight = INT_MAX;
+        std::vector<std::pair<int,int>> neighbors;
+        draw_nbhs(neighbors);
+
+        for (auto pair : neighbors) {
+            int nbh_weight = get_inverted_cycle_weight(cycle, cycle_weight, pair.first, pair.second);
+            if (nbh_weight < best_nbh_weight) {
+                best_nbh_weight = nbh_weight;
+                indexes.first = pair.first;
+                indexes.second = pair.second;
+            }
         }
 
         if (cycle_weight > best_nbh_weight) {
@@ -175,4 +223,38 @@ void Graph::experiment1() {
             best_result = result;
     }
     std::cout << '\n' << name << ';' << sum/num << ';' << best_result << ';' << steps_sum/num;
+}
+
+void Graph::draw_nbhs(std::vector<std::pair<int,int>>& nbhs) {
+    for (int i = 0; i < n; i++) {
+        srand(time(nullptr));
+        std::random_device rd;
+        std::mt19937 mt(rd());
+        std::uniform_real_distribution<double> dist(0, n);
+        int idx1 = floor(dist(mt));
+        int idx2 = floor(dist(mt));
+        while (idx1 == idx2) {
+            idx2 = floor(dist(mt));
+        }
+        if (idx1 < idx2) {
+            nbhs.push_back(std::make_pair(idx1, idx2));
+        } else {
+            nbhs.push_back(std::make_pair(idx2, idx1));
+        }
+    }
+}
+
+void Graph::experiment3() {
+    uint64_t sum = 0;
+    int steps_sum = 0;
+    int best_result = INT_MAX;
+    int num = sqrt(n);
+
+    for (int i = 0; i < num; ++i) {
+        int result = local_search_weight_n_nbhs(steps_sum);
+        sum += result;
+        if (best_result > result)
+            best_result = result;
+    }
+    std::cout << name << ';' << sum/num << ';' << best_result << ';' << steps_sum/num;
 }
